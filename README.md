@@ -1,2 +1,2 @@
 # SeventyFiveHardApp
-A private app for the 75 Hard challenge
+An iOS app for the 75 Hard challenge
