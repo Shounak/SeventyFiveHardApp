@@ -1,0 +1,49 @@
+{
+  "" : {
+    "diagnostics" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHard-primary.dia",
+    "emit-module-dependencies" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHard-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHard-primary-emit-module.dia",
+    "pch" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHard-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHard-primary.swiftdeps"
+  },
+  "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/SeventyFiveHard/ContentView.swift" : {
+    "const-values" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/ContentView.d",
+    "diagnostics" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/ContentView.dia",
+    "index-unit-output-path" : "/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/ContentView.o",
+    "llvm-bc" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/ContentView.bc",
+    "object" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/ContentView.o",
+    "swift-dependencies" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/ContentView~partial.swiftmodule"
+  },
+  "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/SeventyFiveHard/Item.swift" : {
+    "const-values" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/Item.swiftconstvalues",
+    "dependencies" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/Item.d",
+    "diagnostics" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/Item.dia",
+    "index-unit-output-path" : "/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/Item.o",
+    "llvm-bc" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/Item.bc",
+    "object" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/Item.o",
+    "swift-dependencies" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/Item.swiftdeps",
+    "swiftmodule" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/Item~partial.swiftmodule"
+  },
+  "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/SeventyFiveHard/SeventyFiveHardApp.swift" : {
+    "const-values" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHardApp.swiftconstvalues",
+    "dependencies" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHardApp.d",
+    "diagnostics" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHardApp.dia",
+    "index-unit-output-path" : "/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHardApp.o",
+    "llvm-bc" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHardApp.bc",
+    "object" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHardApp.o",
+    "swift-dependencies" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHardApp.swiftdeps",
+    "swiftmodule" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/SeventyFiveHardApp~partial.swiftmodule"
+  },
+  "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/sh.kulkarni/Documents/seventyfivehardapp/SeventyFiveHard/build/SeventyFiveHard.build/Debug-iphonesimulator/SeventyFiveHard.build/Objects-normal/x86_64/GeneratedAssetSymbols~partial.swiftmodule"
+  }
+}
