@@ -127,13 +127,28 @@ struct ContentView: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
 
-            ProgressView(value: Double(min(dayNumber, totalDays)), total: Double(totalDays))
-                .tint(Theme.maroon)
-                .padding(.top, 12)
-                .padding(.horizontal, 4)
+            MosaicProgressBar(
+                store: photoStore,
+                startDate: challenge?.startDate ?? startOfToday,
+                totalDays: totalDays,
+                currentDay: dayNumber,
+                tint: Theme.maroon
+            )
+            .padding(.top, 12)
+            .padding(.horizontal, 4)
+
+            HStack(spacing: 4) {
+                Spacer()
+                Image(systemName: "photo.on.rectangle.angled")
+                    .font(.caption2)
+                Text("Tap for progress photo gallery")
+                    .font(.caption2)
+            }
+            .foregroundStyle(.secondary)
+            .padding(.top, 6)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 28)
+        .padding(.vertical, 24)
         .padding(.horizontal, 20)
         .cardSurface()
     }
@@ -150,7 +165,7 @@ struct ContentView: View {
             )
             RuleRow(
                 title: "In bed by 11:45",
-                subtitle: "Before hue lights go out",
+                subtitle: "Before Hue lights go out",
                 icon: "moon.stars.fill",
                 tint: Theme.green,
                 isOn: bind(\.inBedBy1145, on: entry)
@@ -230,6 +245,58 @@ struct ContentView: View {
             modelContext.insert(ChallengeState(startDate: startOfToday))
         }
         modelContext.insert(DayEntry(date: startOfToday))
+    }
+}
+
+private struct MosaicProgressBar: View {
+    let store: PhotoStore
+    let startDate: Date
+    let totalDays: Int
+    let currentDay: Int
+    let tint: Color
+
+    private let trackHeight: CGFloat = 12
+
+    var body: some View {
+        _ = store.revision
+        return GeometryReader { geo in
+            let width = geo.size.width
+            let cell = width / CGFloat(totalDays)
+            let progress = CGFloat(min(max(currentDay, 0), totalDays))
+
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color.secondary.opacity(0.18))
+
+                Capsule()
+                    .fill(tint.opacity(0.85))
+                    .frame(width: max(0, cell * progress))
+
+                HStack(spacing: 0) {
+                    ForEach(0..<totalDays, id: \.self) { index in
+                        thumbnail(forDayIndex: index, size: cell)
+                            .frame(width: cell, height: trackHeight)
+                    }
+                }
+                .clipShape(Capsule())
+            }
+            .frame(height: trackHeight)
+        }
+        .frame(height: trackHeight)
+    }
+
+    @ViewBuilder
+    private func thumbnail(forDayIndex index: Int, size: CGFloat) -> some View {
+        let date = Calendar.current.date(byAdding: .day, value: index, to: startDate) ?? startDate
+        if let img = store.thumbnail(for: date, maxPixelSize: max(32, size * 4)) {
+            Image(uiImage: img)
+                .resizable()
+                .scaledToFill()
+                .frame(width: size, height: trackHeight)
+                .clipped()
+        } else {
+            Color.clear
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import ImageIO
 import Observation
 
 @Observable
@@ -31,6 +32,28 @@ final class PhotoStore {
         let path = url(for: date).path
         guard FileManager.default.fileExists(atPath: path) else { return nil }
         return UIImage(contentsOfFile: path)
+    }
+
+    private var thumbnailCache: [String: UIImage] = [:]
+
+    func thumbnail(for date: Date, maxPixelSize: CGFloat = 64) -> UIImage? {
+        let url = url(for: date)
+        let key = "\(url.lastPathComponent)|\(Int(maxPixelSize))|\(revision)"
+        if let cached = thumbnailCache[key] { return cached }
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixelSize
+        ]
+        guard let src = CGImageSourceCreateWithURL(url as CFURL, nil),
+              let cg = CGImageSourceCreateThumbnailAtIndex(src, 0, options as CFDictionary) else {
+            return nil
+        }
+        let img = UIImage(cgImage: cg)
+        thumbnailCache[key] = img
+        return img
     }
 
     @discardableResult
