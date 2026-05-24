@@ -71,14 +71,17 @@ struct ContentView: View {
             .onAppear(perform: bootstrap)
             .task {
                 await waterReader.requestAuthorizationAndStartObserving()
-                await AppIconManager.setIcon(todayAllComplete ? "AppIconDay01" : nil)
+                await AppIconManager.setIcon(iconNameForToday)
             }
-            .onChange(of: todayAllComplete) { _, complete in
-                Task { await AppIconManager.setIcon(complete ? "AppIconDay01" : nil) }
+            .onChange(of: dayNumber) { _, _ in
+                Task { await AppIconManager.setIcon(iconNameForToday) }
             }
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .active {
-                    Task { await waterReader.refresh() }
+                    Task {
+                        await waterReader.refresh()
+                        await AppIconManager.setIcon(iconNameForToday)
+                    }
                 }
             }
             .alert("Missed a day", isPresented: $pendingMissedReset) {
@@ -226,6 +229,11 @@ struct ContentView: View {
                 pendingMissedReset = true
             }
         }
+    }
+
+    private var iconNameForToday: String? {
+        let day = min(max(dayNumber, 1), totalDays)
+        return String(format: "AppIconDay%02d", day)
     }
 
     private var todayAllComplete: Bool {

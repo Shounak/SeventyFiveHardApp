@@ -391,7 +391,7 @@
 		CE139FEB2FBEA87A004001AA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIconDay01 AppIconDay02";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIconDay01 AppIconDay02 AppIconDay03 AppIconDay04 AppIconDay05 AppIconDay06 AppIconDay07 AppIconDay08 AppIconDay09 AppIconDay10 AppIconDay11 AppIconDay12 AppIconDay13 AppIconDay14 AppIconDay15 AppIconDay16 AppIconDay17 AppIconDay18 AppIconDay19 AppIconDay20 AppIconDay21 AppIconDay22 AppIconDay23 AppIconDay24 AppIconDay25 AppIconDay26 AppIconDay27 AppIconDay28 AppIconDay29 AppIconDay30 AppIconDay31 AppIconDay32 AppIconDay33 AppIconDay34 AppIconDay35 AppIconDay36 AppIconDay37 AppIconDay38 AppIconDay39 AppIconDay40 AppIconDay41 AppIconDay42 AppIconDay43 AppIconDay44 AppIconDay45 AppIconDay46 AppIconDay47 AppIconDay48 AppIconDay49 AppIconDay50 AppIconDay51 AppIconDay52 AppIconDay53 AppIconDay54 AppIconDay55 AppIconDay56 AppIconDay57 AppIconDay58 AppIconDay59 AppIconDay60 AppIconDay61 AppIconDay62 AppIconDay63 AppIconDay64 AppIconDay65 AppIconDay66 AppIconDay67 AppIconDay68 AppIconDay69 AppIconDay70 AppIconDay71 AppIconDay72 AppIconDay73 AppIconDay74 AppIconDay75";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
@@ -429,7 +429,7 @@
 		CE139FEC2FBEA87A004001AA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIconDay01 AppIconDay02";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIconDay01 AppIconDay02 AppIconDay03 AppIconDay04 AppIconDay05 AppIconDay06 AppIconDay07 AppIconDay08 AppIconDay09 AppIconDay10 AppIconDay11 AppIconDay12 AppIconDay13 AppIconDay14 AppIconDay15 AppIconDay16 AppIconDay17 AppIconDay18 AppIconDay19 AppIconDay20 AppIconDay21 AppIconDay22 AppIconDay23 AppIconDay24 AppIconDay25 AppIconDay26 AppIconDay27 AppIconDay28 AppIconDay29 AppIconDay30 AppIconDay31 AppIconDay32 AppIconDay33 AppIconDay34 AppIconDay35 AppIconDay36 AppIconDay37 AppIconDay38 AppIconDay39 AppIconDay40 AppIconDay41 AppIconDay42 AppIconDay43 AppIconDay44 AppIconDay45 AppIconDay46 AppIconDay47 AppIconDay48 AppIconDay49 AppIconDay50 AppIconDay51 AppIconDay52 AppIconDay53 AppIconDay54 AppIconDay55 AppIconDay56 AppIconDay57 AppIconDay58 AppIconDay59 AppIconDay60 AppIconDay61 AppIconDay62 AppIconDay63 AppIconDay64 AppIconDay65 AppIconDay66 AppIconDay67 AppIconDay68 AppIconDay69 AppIconDay70 AppIconDay71 AppIconDay72 AppIconDay73 AppIconDay74 AppIconDay75";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
