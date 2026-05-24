@@ -233,7 +233,8 @@ struct ContentView: View {
 
     private var iconNameForToday: String? {
         let day = min(max(dayNumber, 1), totalDays)
-        return String(format: "AppIconDay%02d", day)
+        let countdown = totalDays - day + 1
+        return String(format: "AppIconDay%02d", countdown)
     }
 
     private var todayAllComplete: Bool {
