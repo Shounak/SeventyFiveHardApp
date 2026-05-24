@@ -35,8 +35,8 @@ struct ContentView: View {
         for entry in entries {
             if Calendar.current.isDate(entry.date, inSameDayAs: startOfToday) { continue }
             guard entry.date >= start, entry.date < startOfToday else { continue }
-            let waterMet = (await waterReader.ouncesOn(date: entry.date)) >= WaterReader.goalFlOz || entry.water
-            let photoTaken = photoStore.hasPhoto(for: entry.date) || entry.progressPhoto
+            let waterMet = (await waterReader.ouncesOn(date: entry.date)) >= WaterReader.goalFlOz
+            let photoTaken = photoStore.hasPhoto(for: entry.date)
             if !entry.allComplete(waterMetGoal: waterMet, photoTaken: photoTaken) {
                 return true
             }
@@ -47,15 +47,11 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(
-                    colors: [Color(.systemBackground), Color.accentColor.opacity(0.08)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                Theme.background
+                    .ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 20) {
                         Button { showGallery = true } label: { header }
                             .buttonStyle(.plain)
                         if let entry = todayEntry {
@@ -63,8 +59,12 @@ struct ContentView: View {
                         }
                         resetButton
                     }
-                    .padding()
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 24)
                 }
+
+                ConfettiView(trigger: todayAllComplete)
             }
             .navigationTitle("75 Hard")
             .navigationBarTitleDisplayMode(.inline)
@@ -114,26 +114,28 @@ struct ContentView: View {
     }
 
     private var header: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             Text("DAY")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Theme.maroon.opacity(0.7))
                 .tracking(4)
             Text("\(dayNumber)")
-                .font(.system(size: 72, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.accentColor)
+                .font(.system(size: 76, weight: .heavy, design: .rounded))
+                .foregroundStyle(Theme.maroon)
                 .contentTransition(.numericText())
             Text("of \(totalDays)")
-                .font(.headline)
+                .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
 
             ProgressView(value: Double(min(dayNumber, totalDays)), total: Double(totalDays))
-                .tint(Color.accentColor)
-                .padding(.top, 8)
+                .tint(Theme.maroon)
+                .padding(.top, 12)
+                .padding(.horizontal, 4)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .padding(.vertical, 28)
+        .padding(.horizontal, 20)
+        .cardSurface()
     }
 
     @ViewBuilder
@@ -143,32 +145,36 @@ struct ContentView: View {
                 title: "CrossFit class",
                 subtitle: "Usually 5:30",
                 icon: "figure.strengthtraining.traditional",
+                tint: Theme.green,
                 isOn: bind(\.crossfit, on: entry)
             )
             RuleRow(
                 title: "In bed by 11:45",
                 subtitle: "Before hue lights go out",
                 icon: "moon.stars.fill",
+                tint: Theme.green,
                 isOn: bind(\.inBedBy1145, on: entry)
             )
             ProgressPhotoRow(
                 store: photoStore,
                 date: startOfToday,
-                manualOverride: bind(\.progressPhoto, on: entry),
-                onTap: { entry.progressPhoto.toggle() } // TEMP: manual toggle for testing; was: showCamera = true
+                tint: Theme.green,
+                onTap: { showCamera = true }
             )
             RuleRow(
                 title: "10 pages reading",
                 subtitle: "Prefer reading ADHD books",
                 icon: "book.fill",
+                tint: Theme.green,
                 isOn: bind(\.reading, on: entry)
             )
-            WaterRow(reader: waterReader, manualOverride: bind(\.water, on: entry))
-            DietRow(entry: entry)
+            WaterRow(reader: waterReader, tint: Theme.green)
+            DietRow(entry: entry, tint: Theme.green)
             RuleRow(
                 title: "No cheating",
                 subtitle: nil,
                 icon: "hand.raised.fill",
+                tint: Theme.green,
                 isOn: bind(\.noCheating, on: entry)
             )
         }
@@ -179,7 +185,7 @@ struct ContentView: View {
             showResetConfirm = true
         } label: {
             Label("Reset to Day 1", systemImage: "arrow.counterclockwise")
-                .font(.subheadline)
+                .font(.subheadline.weight(.medium))
         }
         .buttonStyle(.bordered)
         .tint(.red)
@@ -209,8 +215,8 @@ struct ContentView: View {
 
     private var todayAllComplete: Bool {
         guard let entry = todayEntry else { return false }
-        let waterMet = waterReader.metGoal || entry.water
-        let photoTaken = photoStore.hasPhoto(for: startOfToday) || entry.progressPhoto
+        let waterMet = waterReader.metGoal
+        let photoTaken = photoStore.hasPhoto(for: startOfToday)
         return entry.allComplete(waterMetGoal: waterMet, photoTaken: photoTaken)
     }
 
@@ -231,6 +237,7 @@ private struct RuleRow: View {
     let title: String
     let subtitle: String?
     let icon: String
+    let tint: Color
     @Binding var isOn: Bool
 
     var body: some View {
@@ -240,13 +247,10 @@ private struct RuleRow: View {
             }
         } label: {
             HStack(spacing: 14) {
-                Image(systemName: icon)
-                    .font(.title3)
-                    .frame(width: 32)
-                    .foregroundStyle(isOn ? Color.accentColor : .secondary)
+                IconBadge(systemName: icon, tint: tint, active: isOn)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.body)
+                        .font(.body.weight(.medium))
                         .foregroundStyle(.primary)
                     if let subtitle {
                         Text(subtitle)
@@ -257,19 +261,37 @@ private struct RuleRow: View {
                 Spacer()
                 Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
-                    .foregroundStyle(isOn ? Color.accentColor : .secondary)
+                    .foregroundStyle(isOn ? tint : Color.secondary.opacity(0.5))
                     .symbolEffect(.bounce, value: isOn)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .cardSurface()
         }
         .buttonStyle(.plain)
     }
 }
 
+private struct IconBadge: View {
+    let systemName: String
+    let tint: Color
+    let active: Bool
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(active ? tint.opacity(0.18) : Color.secondary.opacity(0.10))
+            Image(systemName: systemName)
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(active ? tint : Color.secondary)
+        }
+        .frame(width: 36, height: 36)
+    }
+}
+
 private struct DietRow: View {
     @Bindable var entry: DayEntry
+    let tint: Color
     @State private var expanded = false
 
     var body: some View {
@@ -280,13 +302,10 @@ private struct DietRow: View {
                 }
             } label: {
                 HStack(spacing: 14) {
-                    Image(systemName: "fork.knife")
-                        .font(.title3)
-                        .frame(width: 32)
-                        .foregroundStyle(entry.dietComplete ? Color.accentColor : .secondary)
+                    IconBadge(systemName: "fork.knife", tint: tint, active: entry.dietComplete)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Follow diet")
-                            .font(.body)
+                            .font(.body.weight(.medium))
                             .foregroundStyle(.primary)
                         Text(dietSummary)
                             .font(.caption)
@@ -299,7 +318,7 @@ private struct DietRow: View {
                         .rotationEffect(.degrees(expanded ? 180 : 0))
                     Image(systemName: entry.dietComplete ? "checkmark.circle.fill" : "circle")
                         .font(.title2)
-                        .foregroundStyle(entry.dietComplete ? Color.accentColor : .secondary)
+                        .foregroundStyle(entry.dietComplete ? tint : Color.secondary.opacity(0.5))
                         .symbolEffect(.bounce, value: entry.dietComplete)
                 }
                 .padding(.horizontal, 16)
@@ -310,19 +329,19 @@ private struct DietRow: View {
 
             if expanded {
                 VStack(spacing: 8) {
-                    SubItemRow(title: "Solid meal 1", icon: .symbol("frying.pan.fill"), isOn: $entry.meal1)
-                    SubItemRow(title: "Fruit 1", icon: .emoji("🍌"), isOn: $entry.fruit1)
-                    SubItemRow(title: "Protein shake 1", icon: .symbol("takeoutbag.and.cup.and.straw.fill"), isOn: $entry.shake1)
-                    SubItemRow(title: "Solid meal 2", icon: .symbol("fork.knife"), isOn: $entry.meal2)
-                    SubItemRow(title: "Fruit 2", icon: .emoji("🍎"), isOn: $entry.fruit2)
-                    SubItemRow(title: "Protein shake 2", icon: .symbol("cup.and.saucer.fill"), isOn: $entry.shake2)
+                    SubItemRow(title: "Solid meal 1", icon: "frying.pan.fill", tint: tint, isOn: $entry.meal1)
+                    SubItemRow(title: "Fruit 1", icon: "applelogo", tint: tint, isOn: $entry.fruit1)
+                    SubItemRow(title: "Protein shake 1", icon: "takeoutbag.and.cup.and.straw.fill", tint: tint, isOn: $entry.shake1)
+                    SubItemRow(title: "Solid meal 2", icon: "fork.knife", tint: tint, isOn: $entry.meal2)
+                    SubItemRow(title: "Fruit 2", icon: "carrot.fill", tint: tint, isOn: $entry.fruit2)
+                    SubItemRow(title: "Protein shake 2", icon: "cup.and.saucer.fill", tint: tint, isOn: $entry.shake2)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 14)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .cardSurface()
     }
 
     private var dietSummary: String {
@@ -333,14 +352,10 @@ private struct DietRow: View {
     }
 }
 
-enum RowIcon {
-    case symbol(String)
-    case emoji(String)
-}
-
 private struct SubItemRow: View {
     let title: String
-    let icon: RowIcon
+    let icon: String
+    let tint: Color
     @Binding var isOn: Bool
 
     var body: some View {
@@ -350,7 +365,9 @@ private struct SubItemRow: View {
             }
         } label: {
             HStack(spacing: 12) {
-                iconView
+                Image(systemName: icon)
+                    .font(.subheadline)
+                    .foregroundStyle(isOn ? tint : Color.secondary)
                     .frame(width: 28)
                 Text(title)
                     .font(.subheadline)
@@ -358,34 +375,23 @@ private struct SubItemRow: View {
                 Spacer()
                 Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(isOn ? Color.accentColor : .secondary)
+                    .foregroundStyle(isOn ? tint : Color.secondary.opacity(0.5))
                     .symbolEffect(.bounce, value: isOn)
             }
             .padding(.vertical, 8)
             .padding(.horizontal, 10)
-            .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Theme.background.opacity(0.6))
+            )
         }
         .buttonStyle(.plain)
-    }
-
-    @ViewBuilder
-    private var iconView: some View {
-        switch icon {
-        case .symbol(let name):
-            Image(systemName: name)
-                .font(.subheadline)
-                .foregroundStyle(isOn ? Color.accentColor : .secondary)
-        case .emoji(let glyph):
-            Text(glyph)
-                .font(.subheadline)
-                .saturation(0)
-                .opacity(isOn ? 1.0 : 0.6)
-        }
     }
 }
 
 private struct WaterRow: View {
     let reader: WaterReader
+    let tint: Color
 
     private var goal: Double { WaterReader.goalFlOz }
     private var ounces: Double { reader.ounces }
@@ -394,34 +400,31 @@ private struct WaterRow: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            Image(systemName: "drop.fill")
-                .font(.title3)
-                .frame(width: 32)
-                .foregroundStyle(met ? Color.accentColor : .secondary)
+            IconBadge(systemName: "drop.fill", tint: tint, active: met)
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline) {
                     Text("1 gallon water")
-                        .font(.body)
+                        .font(.body.weight(.medium))
                         .foregroundStyle(.primary)
                     Spacer()
                     Text("\(Int(ounces.rounded())) / \(Int(goal)) fl oz")
                         .font(.caption.monospacedDigit())
-                        .foregroundStyle(met ? Color.accentColor : .secondary)
+                        .foregroundStyle(met ? tint : .secondary)
                 }
                 ProgressView(value: fraction)
-                    .tint(met ? Color.accentColor : Color.accentColor.opacity(0.6))
+                    .tint(tint)
                 Text(subtitle)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
             Image(systemName: met ? "checkmark.circle.fill" : "circle")
                 .font(.title2)
-                .foregroundStyle(met ? Color.accentColor : .secondary)
+                .foregroundStyle(met ? tint : Color.secondary.opacity(0.5))
                 .symbolEffect(.bounce, value: met)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .cardSurface()
         .animation(.easeInOut(duration: 0.25), value: ounces)
     }
 
@@ -438,6 +441,7 @@ private struct WaterRow: View {
 private struct ProgressPhotoRow: View {
     let store: PhotoStore
     let date: Date
+    let tint: Color
     let onTap: () -> Void
 
     private var hasPhoto: Bool { _ = store.revision; return store.hasPhoto(for: date) }
@@ -445,13 +449,10 @@ private struct ProgressPhotoRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 14) {
-                Image(systemName: "camera.fill")
-                    .font(.title3)
-                    .frame(width: 32)
-                    .foregroundStyle(hasPhoto ? Color.accentColor : .secondary)
+                IconBadge(systemName: "camera.fill", tint: tint, active: hasPhoto)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Take a Progress Photo")
-                        .font(.body)
+                        .font(.body.weight(.medium))
                         .foregroundStyle(.primary)
                     Text(hasPhoto ? "Tap to retake" : "Before post-workout shower")
                         .font(.caption)
@@ -467,13 +468,13 @@ private struct ProgressPhotoRow: View {
                 }
                 Image(systemName: hasPhoto ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
-                    .foregroundStyle(hasPhoto ? Color.accentColor : .secondary)
+                    .foregroundStyle(hasPhoto ? tint : Color.secondary.opacity(0.5))
                     .symbolEffect(.bounce, value: hasPhoto)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
             .contentShape(Rectangle())
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .cardSurface()
         }
         .buttonStyle(.plain)
     }
