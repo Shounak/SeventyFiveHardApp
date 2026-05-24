@@ -7,10 +7,13 @@ final class DayEntry {
 
     var crossfit: Bool = false
     var inBedBy1145: Bool = false
-    var progressPhoto: Bool = false
     var reading: Bool = false
-    var water: Bool = false
     var noCheating: Bool = false
+
+    // Water is derived from HealthKit, progressPhoto is derived from PhotoStore.
+    // Legacy fields kept on disk for old records but never read.
+    var water: Bool = false
+    var progressPhoto: Bool = false
 
     var meal1: Bool = false
     var meal2: Bool = false
@@ -27,8 +30,8 @@ final class DayEntry {
         meal1 && meal2 && fruit1 && fruit2 && shake1 && shake2
     }
 
-    var allComplete: Bool {
-        crossfit && inBedBy1145 && progressPhoto && reading && water && noCheating && dietComplete
+    func allComplete(waterMetGoal: Bool, photoTaken: Bool) -> Bool {
+        crossfit && inBedBy1145 && reading && noCheating && waterMetGoal && photoTaken && dietComplete
     }
 }
 

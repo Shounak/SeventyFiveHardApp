@@ -3,9 +3,14 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     @Query(sort: \DayEntry.date) private var entries: [DayEntry]
     @Query private var states: [ChallengeState]
 
+    @State private var waterReader = WaterReader()
+    @State private var photoStore = PhotoStore()
+    @State private var showCamera = false
+    @State private var showGallery = false
     @State private var showResetConfirm = false
     @State private var pendingMissedReset = false
 
@@ -25,14 +30,18 @@ struct ContentView: View {
         entries.first { Calendar.current.isDate($0.date, inSameDayAs: startOfToday) }
     }
 
-    private var missedYesterday: DayEntry? {
-        guard let start = challenge?.startDate, start < startOfToday else { return nil }
-        return entries.first { entry in
-            !Calendar.current.isDate(entry.date, inSameDayAs: startOfToday) &&
-            entry.date >= start &&
-            entry.date < startOfToday &&
-            !entry.allComplete
+    private func anyMissedPriorDay() async -> Bool {
+        guard let start = challenge?.startDate, start < startOfToday else { return false }
+        for entry in entries {
+            if Calendar.current.isDate(entry.date, inSameDayAs: startOfToday) { continue }
+            guard entry.date >= start, entry.date < startOfToday else { continue }
+            let waterMet = (await waterReader.ouncesOn(date: entry.date)) >= WaterReader.goalFlOz || entry.water
+            let photoTaken = photoStore.hasPhoto(for: entry.date) || entry.progressPhoto
+            if !entry.allComplete(waterMetGoal: waterMet, photoTaken: photoTaken) {
+                return true
+            }
         }
+        return false
     }
 
     var body: some View {
@@ -47,7 +56,8 @@ struct ContentView: View {
 
                 ScrollView {
                     VStack(spacing: 24) {
-                        header
+                        Button { showGallery = true } label: { header }
+                            .buttonStyle(.plain)
                         if let entry = todayEntry {
                             checklist(for: entry)
                         }
@@ -59,6 +69,18 @@ struct ContentView: View {
             .navigationTitle("75 Hard")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear(perform: bootstrap)
+            .task {
+                await waterReader.requestAuthorizationAndStartObserving()
+                await AppIconManager.setIcon(todayAllComplete ? "AppIconDay01" : nil)
+            }
+            .onChange(of: todayAllComplete) { _, complete in
+                Task { await AppIconManager.setIcon(complete ? "AppIconDay01" : nil) }
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    Task { await waterReader.refresh() }
+                }
+            }
             .alert("Missed a day", isPresented: $pendingMissedReset) {
                 Button("Reset to Day 1", role: .destructive) { resetChallenge() }
                 Button("Not now", role: .cancel) {}
@@ -74,6 +96,19 @@ struct ContentView: View {
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("This wipes all 75 Hard progress and restarts from today.")
+            }
+            .fullScreenCover(isPresented: $showCamera) {
+                CameraView { image in
+                    photoStore.save(image, for: startOfToday)
+                }
+                .ignoresSafeArea()
+            }
+            .sheet(isPresented: $showGallery) {
+                GalleryView(
+                    startDate: challenge?.startDate ?? startOfToday,
+                    totalDays: totalDays,
+                    store: photoStore
+                )
             }
         }
     }
@@ -116,11 +151,11 @@ struct ContentView: View {
                 icon: "moon.stars.fill",
                 isOn: bind(\.inBedBy1145, on: entry)
             )
-            RuleRow(
-                title: "Progress photo",
-                subtitle: "Before post-workout shower",
-                icon: "camera.fill",
-                isOn: bind(\.progressPhoto, on: entry)
+            ProgressPhotoRow(
+                store: photoStore,
+                date: startOfToday,
+                manualOverride: bind(\.progressPhoto, on: entry),
+                onTap: { entry.progressPhoto.toggle() } // TEMP: manual toggle for testing; was: showCamera = true
             )
             RuleRow(
                 title: "10 pages reading",
@@ -128,12 +163,7 @@ struct ContentView: View {
                 icon: "book.fill",
                 isOn: bind(\.reading, on: entry)
             )
-            RuleRow(
-                title: "1 gallon water",
-                subtitle: "Track in WaterLlama app. 1 gallon = 16 cups = 128 fl oz",
-                icon: "drop.fill",
-                isOn: bind(\.water, on: entry)
-            )
+            WaterRow(reader: waterReader, manualOverride: bind(\.water, on: entry))
             DietRow(entry: entry)
             RuleRow(
                 title: "No cheating",
@@ -170,9 +200,18 @@ struct ContentView: View {
         if todayEntry == nil {
             modelContext.insert(DayEntry(date: startOfToday))
         }
-        if missedYesterday != nil {
-            pendingMissedReset = true
+        Task {
+            if await anyMissedPriorDay() {
+                pendingMissedReset = true
+            }
         }
+    }
+
+    private var todayAllComplete: Bool {
+        guard let entry = todayEntry else { return false }
+        let waterMet = waterReader.metGoal || entry.water
+        let photoTaken = photoStore.hasPhoto(for: startOfToday) || entry.progressPhoto
+        return entry.allComplete(waterMetGoal: waterMet, photoTaken: photoTaken)
     }
 
     private func resetChallenge() {
@@ -265,17 +304,18 @@ private struct DietRow: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
             if expanded {
                 VStack(spacing: 8) {
-                    SubItemRow(title: "Solid meal 1", isOn: $entry.meal1)
-                    SubItemRow(title: "Solid meal 2", isOn: $entry.meal2)
-                    SubItemRow(title: "Fruit 1", isOn: $entry.fruit1)
-                    SubItemRow(title: "Fruit 2", isOn: $entry.fruit2)
-                    SubItemRow(title: "Protein shake 1", isOn: $entry.shake1)
-                    SubItemRow(title: "Protein shake 2", isOn: $entry.shake2)
+                    SubItemRow(title: "Solid meal 1", icon: .symbol("frying.pan.fill"), isOn: $entry.meal1)
+                    SubItemRow(title: "Fruit 1", icon: .emoji("🍌"), isOn: $entry.fruit1)
+                    SubItemRow(title: "Protein shake 1", icon: .symbol("takeoutbag.and.cup.and.straw.fill"), isOn: $entry.shake1)
+                    SubItemRow(title: "Solid meal 2", icon: .symbol("fork.knife"), isOn: $entry.meal2)
+                    SubItemRow(title: "Fruit 2", icon: .emoji("🍎"), isOn: $entry.fruit2)
+                    SubItemRow(title: "Protein shake 2", icon: .symbol("cup.and.saucer.fill"), isOn: $entry.shake2)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 14)
@@ -293,8 +333,14 @@ private struct DietRow: View {
     }
 }
 
+enum RowIcon {
+    case symbol(String)
+    case emoji(String)
+}
+
 private struct SubItemRow: View {
     let title: String
+    let icon: RowIcon
     @Binding var isOn: Bool
 
     var body: some View {
@@ -303,17 +349,131 @@ private struct SubItemRow: View {
                 isOn.toggle()
             }
         } label: {
-            HStack {
-                Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(isOn ? Color.accentColor : .secondary)
+            HStack(spacing: 12) {
+                iconView
+                    .frame(width: 28)
                 Text(title)
                     .font(.subheadline)
                     .foregroundStyle(.primary)
                 Spacer()
+                Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(isOn ? Color.accentColor : .secondary)
+                    .symbolEffect(.bounce, value: isOn)
             }
-            .padding(.vertical, 6)
-            .padding(.horizontal, 8)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 10)
             .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private var iconView: some View {
+        switch icon {
+        case .symbol(let name):
+            Image(systemName: name)
+                .font(.subheadline)
+                .foregroundStyle(isOn ? Color.accentColor : .secondary)
+        case .emoji(let glyph):
+            Text(glyph)
+                .font(.subheadline)
+                .saturation(0)
+                .opacity(isOn ? 1.0 : 0.6)
+        }
+    }
+}
+
+private struct WaterRow: View {
+    let reader: WaterReader
+
+    private var goal: Double { WaterReader.goalFlOz }
+    private var ounces: Double { reader.ounces }
+    private var fraction: Double { min(ounces / goal, 1.0) }
+    private var met: Bool { reader.metGoal }
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "drop.fill")
+                .font(.title3)
+                .frame(width: 32)
+                .foregroundStyle(met ? Color.accentColor : .secondary)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("1 gallon water")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Text("\(Int(ounces.rounded())) / \(Int(goal)) fl oz")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(met ? Color.accentColor : .secondary)
+                }
+                ProgressView(value: fraction)
+                    .tint(met ? Color.accentColor : Color.accentColor.opacity(0.6))
+                Text(subtitle)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            Image(systemName: met ? "checkmark.circle.fill" : "circle")
+                .font(.title2)
+                .foregroundStyle(met ? Color.accentColor : .secondary)
+                .symbolEffect(.bounce, value: met)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .animation(.easeInOut(duration: 0.25), value: ounces)
+    }
+
+    private var subtitle: String {
+        switch reader.authStatus {
+        case .unknown: "Connecting to Apple Health…"
+        case .denied: "Health access denied — enable in Settings to auto-track"
+        case .unavailable: "Apple Health unavailable on this device"
+        case .authorized: "From Apple Health (logged via WaterLlama)"
+        }
+    }
+}
+
+private struct ProgressPhotoRow: View {
+    let store: PhotoStore
+    let date: Date
+    let onTap: () -> Void
+
+    private var hasPhoto: Bool { _ = store.revision; return store.hasPhoto(for: date) }
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 14) {
+                Image(systemName: "camera.fill")
+                    .font(.title3)
+                    .frame(width: 32)
+                    .foregroundStyle(hasPhoto ? Color.accentColor : .secondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Take a Progress Photo")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                    Text(hasPhoto ? "Tap to retake" : "Before post-workout shower")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                if let image = store.loadImage(for: date) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 36, height: 36)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+                Image(systemName: hasPhoto ? "checkmark.circle.fill" : "circle")
+                    .font(.title2)
+                    .foregroundStyle(hasPhoto ? Color.accentColor : .secondary)
+                    .symbolEffect(.bounce, value: hasPhoto)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(.plain)
     }
