@@ -12,11 +12,11 @@ enum Theme {
 }
 
 extension View {
-    func cardSurface() -> some View {
+    func cardSurface(fill: Color = Theme.surface) -> some View {
         self
             .background(
                 RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous)
-                    .fill(Theme.surface)
+                    .fill(fill)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: Theme.cardCornerRadius, style: .continuous)

@@ -6,6 +6,7 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Query(sort: \DayEntry.date) private var entries: [DayEntry]
     @Query private var states: [ChallengeState]
+    @Query(sort: \WeeklyPrize.weekNumber) private var prizes: [WeeklyPrize]
 
     @State private var waterReader = WaterReader()
     @State private var photoStore = PhotoStore()
@@ -13,6 +14,7 @@ struct ContentView: View {
     @State private var showGallery = false
     @State private var showResetConfirm = false
     @State private var pendingMissedReset = false
+    @State private var showPrizes = false
 
     private let totalDays = 75
 
@@ -57,6 +59,7 @@ struct ContentView: View {
                         if let entry = todayEntry {
                             checklist(for: entry)
                         }
+                        prizesButton
                         resetButton
                     }
                     .padding(.horizontal, 16)
@@ -113,6 +116,10 @@ struct ContentView: View {
                     store: photoStore
                 )
             }
+            .sheet(isPresented: $showPrizes) {
+                WeeklyPrizesView(currentDay: dayNumber)
+                    .presentationDetents([.large])
+            }
         }
     }
 
@@ -120,25 +127,47 @@ struct ContentView: View {
         VStack(spacing: 6) {
             Text("DAY")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(Theme.maroon.opacity(0.7))
+                .foregroundStyle(Theme.maroon)
                 .tracking(4)
             Text("\(dayNumber)")
                 .font(.system(size: 76, weight: .heavy, design: .rounded))
-                .foregroundStyle(Theme.maroon)
+                .foregroundStyle(.white)
                 .contentTransition(.numericText())
             Text("of \(totalDays)")
                 .font(.subheadline.weight(.medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.maroon)
 
             MosaicProgressBar(
                 store: photoStore,
                 startDate: challenge?.startDate ?? startOfToday,
                 totalDays: totalDays,
                 currentDay: dayNumber,
-                tint: Theme.maroon
+                tint: Theme.maroon,
+                trackBackground: Color.white.opacity(0.25)
             )
             .padding(.top, 12)
             .padding(.horizontal, 4)
+
+            MilestoneStrip(
+                totalDays: totalDays,
+                currentDay: dayNumber,
+                unlockedColor: .white,
+                lockedColor: Color.white.opacity(0.4)
+            )
+            .padding(.top, 4)
+            .padding(.horizontal, 4)
+
+            if let next = nextRewardSummary {
+                HStack(spacing: 6) {
+                    Image(systemName: "gift.fill")
+                        .font(.caption)
+                    Text(next)
+                        .font(.caption.weight(.medium))
+                        .lineLimit(1)
+                }
+                .foregroundStyle(.white)
+                .padding(.top, 8)
+            }
 
             HStack(spacing: 4) {
                 Spacer()
@@ -147,13 +176,13 @@ struct ContentView: View {
                 Text("Tap for progress photo gallery")
                     .font(.caption2)
             }
-            .foregroundStyle(.secondary)
+            .foregroundStyle(Color.white.opacity(0.8))
             .padding(.top, 6)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
         .padding(.horizontal, 20)
-        .cardSurface()
+        .cardSurface(fill: Theme.primary)
     }
 
     @ViewBuilder
@@ -198,6 +227,17 @@ struct ContentView: View {
         }
     }
 
+    private var prizesButton: some View {
+        Button {
+            showPrizes = true
+        } label: {
+            Label("Weekly Prizes", systemImage: "gift.fill").font(.subheadline.weight(.medium))
+        }
+        .buttonStyle(.bordered)
+        .tint(Theme.primary)
+        .padding(.top, 8)
+    }
+
     private var resetButton: some View {
         Button(role: .destructive) {
             showResetConfirm = true
@@ -207,7 +247,27 @@ struct ContentView: View {
         }
         .buttonStyle(.bordered)
         .tint(.red)
-        .padding(.top, 8)
+    }
+
+    private var nextRewardSummary: String? {
+        let today = min(max(dayNumber, 1), totalDays)
+        for week in 1...WeeklyPrize.totalWeeks {
+            let unlock = WeeklyPrize.unlockDay(for: week)
+            if today <= unlock {
+                let prizeText = prizes.first(where: { $0.weekNumber == week })?.prize ?? ""
+                let remaining = unlock - today
+                let countLabel: String = {
+                    if remaining == 0 { return "today" }
+                    if remaining == 1 { return "in 1 day" }
+                    return "in \(remaining) days"
+                }()
+                if prizeText.trimmingCharacters(in: .whitespaces).isEmpty {
+                    return "Week \(week) prize unlocks \(countLabel) — tap to set"
+                }
+                return "Next prize \(countLabel): \(prizeText)"
+            }
+        }
+        return nil
     }
 
     private func bind(_ keyPath: ReferenceWritableKeyPath<DayEntry, Bool>, on entry: DayEntry) -> Binding<Bool> {
@@ -263,6 +323,7 @@ private struct MosaicProgressBar: View {
     let totalDays: Int
     let currentDay: Int
     let tint: Color
+    var trackBackground: Color = Color.secondary.opacity(0.18)
 
     private let trackHeight: CGFloat = 12
 
@@ -275,10 +336,10 @@ private struct MosaicProgressBar: View {
 
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(Color.secondary.opacity(0.18))
+                    .fill(trackBackground)
 
                 Capsule()
-                    .fill(tint.opacity(0.85))
+                    // .fill(tint.opacity(0.85))
                     .frame(width: max(0, cell * progress))
 
                 HStack(spacing: 0) {
@@ -309,6 +370,32 @@ private struct MosaicProgressBar: View {
     }
 }
 
+private struct MilestoneStrip: View {
+    let totalDays: Int
+    let currentDay: Int
+    var unlockedColor: Color = Theme.primary
+    var lockedColor: Color = Color.secondary.opacity(0.5)
+
+    var body: some View {
+        GeometryReader { geo in
+            let width = geo.size.width
+            ZStack(alignment: .topLeading) {
+                ForEach(1...WeeklyPrize.totalWeeks, id: \.self) { week in
+                    let unlockDay = WeeklyPrize.unlockDay(for: week)
+                    let centerX = (CGFloat(unlockDay) - 0.5) * (width / CGFloat(totalDays))
+                    let unlocked = currentDay >= unlockDay
+                    Image(systemName: unlocked ? "gift.fill" : "gift")
+                        .font(.caption2)
+                        .foregroundStyle(unlocked ? unlockedColor : lockedColor)
+                        .frame(width: 16, height: 16)
+                        .position(x: centerX, y: 8)
+                }
+            }
+        }
+        .frame(height: 16)
+    }
+}
+
 private struct RuleRow: View {
     let title: String
     let subtitle: String?
@@ -327,22 +414,22 @@ private struct RuleRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.body.weight(.medium))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(isOn ? .white : .primary)
                     if let subtitle {
                         Text(subtitle)
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(isOn ? Color.white.opacity(0.8) : .secondary)
                     }
                 }
                 Spacer()
                 Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
-                    .foregroundStyle(isOn ? tint : Color.secondary.opacity(0.5))
+                    .foregroundStyle(isOn ? .white : Color.secondary.opacity(0.5))
                     .symbolEffect(.bounce, value: isOn)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
-            .cardSurface()
+            .cardSurface(fill: isOn ? tint : Theme.surface)
         }
         .buttonStyle(.plain)
     }
@@ -356,10 +443,10 @@ private struct IconBadge: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(active ? tint.opacity(0.18) : Color.secondary.opacity(0.10))
+                .fill(active ? Color.white.opacity(0.22) : Color.secondary.opacity(0.10))
             Image(systemName: systemName)
                 .font(.callout.weight(.semibold))
-                .foregroundStyle(active ? tint : Color.secondary)
+                .foregroundStyle(active ? .white : Color.secondary)
         }
         .frame(width: 36, height: 36)
     }
@@ -370,6 +457,8 @@ private struct DietRow: View {
     let tint: Color
     @State private var expanded = false
 
+    private var complete: Bool { entry.dietComplete }
+
     var body: some View {
         VStack(spacing: 0) {
             Button {
@@ -378,24 +467,24 @@ private struct DietRow: View {
                 }
             } label: {
                 HStack(spacing: 14) {
-                    IconBadge(systemName: "fork.knife", tint: tint, active: entry.dietComplete)
+                    IconBadge(systemName: "fork.knife", tint: tint, active: complete)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Follow diet")
                             .font(.body.weight(.medium))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(complete ? .white : .primary)
                         Text(dietSummary)
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(complete ? Color.white.opacity(0.8) : .secondary)
                     }
                     Spacer()
                     Image(systemName: "chevron.down")
                         .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(complete ? Color.white.opacity(0.8) : .secondary)
                         .rotationEffect(.degrees(expanded ? 180 : 0))
-                    Image(systemName: entry.dietComplete ? "checkmark.circle.fill" : "circle")
+                    Image(systemName: complete ? "checkmark.circle.fill" : "circle")
                         .font(.title2)
-                        .foregroundStyle(entry.dietComplete ? tint : Color.secondary.opacity(0.5))
-                        .symbolEffect(.bounce, value: entry.dietComplete)
+                        .foregroundStyle(complete ? .white : Color.secondary.opacity(0.5))
+                        .symbolEffect(.bounce, value: complete)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
@@ -405,19 +494,19 @@ private struct DietRow: View {
 
             if expanded {
                 VStack(spacing: 8) {
-                    SubItemRow(title: "Solid meal 1", icon: "frying.pan.fill", tint: tint, isOn: $entry.meal1)
-                    SubItemRow(title: "Fruit 1", icon: "applelogo", tint: tint, isOn: $entry.fruit1)
-                    SubItemRow(title: "Protein shake 1", icon: "takeoutbag.and.cup.and.straw.fill", tint: tint, isOn: $entry.shake1)
-                    SubItemRow(title: "Solid meal 2", icon: "fork.knife", tint: tint, isOn: $entry.meal2)
-                    SubItemRow(title: "Fruit 2", icon: "carrot.fill", tint: tint, isOn: $entry.fruit2)
-                    SubItemRow(title: "Protein shake 2", icon: "cup.and.saucer.fill", tint: tint, isOn: $entry.shake2)
+                    SubItemRow(title: "Solid meal 1", icon: "frying.pan.fill", tint: tint, parentComplete: complete, isOn: $entry.meal1)
+                    SubItemRow(title: "Fruit 1", icon: "applelogo", tint: tint, parentComplete: complete, isOn: $entry.fruit1)
+                    SubItemRow(title: "Protein shake 1", icon: "takeoutbag.and.cup.and.straw.fill", tint: tint, parentComplete: complete, isOn: $entry.shake1)
+                    SubItemRow(title: "Solid meal 2", icon: "fork.knife", tint: tint, parentComplete: complete, isOn: $entry.meal2)
+                    SubItemRow(title: "Fruit 2", icon: "carrot.fill", tint: tint, parentComplete: complete, isOn: $entry.fruit2)
+                    SubItemRow(title: "Protein shake 2", icon: "cup.and.saucer.fill", tint: tint, parentComplete: complete, isOn: $entry.shake2)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 14)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .cardSurface()
+        .cardSurface(fill: complete ? tint : Theme.surface)
     }
 
     private var dietSummary: String {
@@ -432,6 +521,7 @@ private struct SubItemRow: View {
     let title: String
     let icon: String
     let tint: Color
+    let parentComplete: Bool
     @Binding var isOn: Bool
 
     var body: some View {
@@ -443,25 +533,40 @@ private struct SubItemRow: View {
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.subheadline)
-                    .foregroundStyle(isOn ? tint : Color.secondary)
+                    .foregroundStyle(iconColor)
                     .frame(width: 28)
                 Text(title)
                     .font(.subheadline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(parentComplete ? .white : .primary)
                 Spacer()
                 Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(isOn ? tint : Color.secondary.opacity(0.5))
+                    .foregroundStyle(checkColor)
                     .symbolEffect(.bounce, value: isOn)
             }
             .padding(.vertical, 8)
             .padding(.horizontal, 10)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Theme.background.opacity(0.6))
+                    .fill(rowFill)
             )
         }
         .buttonStyle(.plain)
+    }
+
+    private var iconColor: Color {
+        if parentComplete { return .white }
+        return isOn ? tint : Color.secondary
+    }
+
+    private var checkColor: Color {
+        if parentComplete { return .white }
+        return isOn ? tint : Color.secondary.opacity(0.5)
+    }
+
+    private var rowFill: Color {
+        if parentComplete { return Color.white.opacity(0.18) }
+        return Theme.background.opacity(0.6)
     }
 }
 
@@ -481,26 +586,26 @@ private struct WaterRow: View {
                 HStack(alignment: .firstTextBaseline) {
                     Text("1 gallon water")
                         .font(.body.weight(.medium))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(met ? .white : .primary)
                     Spacer()
                     Text("\(Int(ounces.rounded())) / \(Int(goal)) fl oz")
                         .font(.caption.monospacedDigit())
-                        .foregroundStyle(met ? tint : .secondary)
+                        .foregroundStyle(met ? Color.white.opacity(0.9) : .secondary)
                 }
                 ProgressView(value: fraction)
-                    .tint(tint)
+                    .tint(met ? .white : tint)
                 Text(subtitle)
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(met ? Color.white.opacity(0.8) : .secondary)
             }
             Image(systemName: met ? "checkmark.circle.fill" : "circle")
                 .font(.title2)
-                .foregroundStyle(met ? tint : Color.secondary.opacity(0.5))
+                .foregroundStyle(met ? .white : Color.secondary.opacity(0.5))
                 .symbolEffect(.bounce, value: met)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .cardSurface()
+        .cardSurface(fill: met ? tint : Theme.surface)
         .animation(.easeInOut(duration: 0.25), value: ounces)
     }
 
@@ -529,10 +634,10 @@ private struct ProgressPhotoRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Take a Progress Photo")
                         .font(.body.weight(.medium))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(hasPhoto ? .white : .primary)
                     Text(hasPhoto ? "Tap to retake" : "Before post-workout shower")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(hasPhoto ? Color.white.opacity(0.8) : .secondary)
                 }
                 Spacer()
                 if let image = store.loadImage(for: date) {
@@ -544,13 +649,13 @@ private struct ProgressPhotoRow: View {
                 }
                 Image(systemName: hasPhoto ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
-                    .foregroundStyle(hasPhoto ? tint : Color.secondary.opacity(0.5))
+                    .foregroundStyle(hasPhoto ? .white : Color.secondary.opacity(0.5))
                     .symbolEffect(.bounce, value: hasPhoto)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
             .contentShape(Rectangle())
-            .cardSurface()
+            .cardSurface(fill: hasPhoto ? tint : Theme.surface)
         }
         .buttonStyle(.plain)
     }

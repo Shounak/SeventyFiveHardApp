@@ -7,6 +7,7 @@ struct SeventyFiveHardApp: App {
         let schema = Schema([
             DayEntry.self,
             ChallengeState.self,
+            WeeklyPrize.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

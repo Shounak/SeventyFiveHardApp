@@ -43,3 +43,28 @@ final class ChallengeState {
         self.startDate = startDate
     }
 }
+
+@Model
+final class WeeklyPrize {
+    @Attribute(.unique) var weekNumber: Int
+    var prize: String
+
+    init(weekNumber: Int, prize: String = "") {
+        self.weekNumber = weekNumber
+        self.prize = prize
+    }
+
+    /// 75 Hard breaks into 10 full 7-day weeks (1–10) plus a final 5-day stretch (week 11, days 71–75).
+    static let totalWeeks = 11
+
+    static func dayRange(for week: Int) -> ClosedRange<Int> {
+        let start = (week - 1) * 7 + 1
+        let end = week == totalWeeks ? 75 : week * 7
+        return start...end
+    }
+
+    /// The day number on which this week's prize unlocks (the last day of the week).
+    static func unlockDay(for week: Int) -> Int {
+        dayRange(for: week).upperBound
+    }
+}
