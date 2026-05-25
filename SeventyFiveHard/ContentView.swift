@@ -186,19 +186,14 @@ struct ContentView: View {
     @ViewBuilder
     private func checklist(for entry: DayEntry) -> some View {
         VStack(spacing: 12) {
+            DietRow(entry: entry, tint: Theme.green)
+            WaterRow(reader: waterReader, tint: Theme.green)
             RuleRow(
                 title: "Workout",
                 subtitle: "Usually CrossFit class at 5:30",
                 icon: "figure.strengthtraining.traditional",
                 tint: Theme.green,
                 isOn: bind(\.crossfit, on: entry)
-            )
-            RuleRow(
-                title: "In bed by 11:45",
-                subtitle: "Before Hue lights go out",
-                icon: "moon.stars.fill",
-                tint: Theme.green,
-                isOn: bind(\.inBedBy1145, on: entry)
             )
             ProgressPhotoRow(
                 store: photoStore,
@@ -213,8 +208,13 @@ struct ContentView: View {
                 tint: Theme.green,
                 isOn: bind(\.reading, on: entry)
             )
-            WaterRow(reader: waterReader, tint: Theme.green)
-            DietRow(entry: entry, tint: Theme.green)
+            RuleRow(
+                title: "In bed by 11:45",
+                subtitle: "Before Hue lights go out",
+                icon: "moon.stars.fill",
+                tint: Theme.green,
+                isOn: bind(\.inBedBy1145, on: entry)
+            )
             RuleRow(
                 title: "No cheating",
                 subtitle: nil,
@@ -346,7 +346,6 @@ private struct MosaicProgressBar: View {
                             .frame(width: cell, height: trackHeight)
                     }
                 }
-                .clipShape(Capsule())
             }
             .frame(height: trackHeight)
         }
