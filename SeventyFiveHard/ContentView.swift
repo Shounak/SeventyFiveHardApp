@@ -69,7 +69,6 @@ struct ContentView: View {
 
                 ConfettiView(trigger: todayAllComplete)
             }
-            .navigationTitle("75 Hard")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear(perform: bootstrap)
             .task {
@@ -127,22 +126,23 @@ struct ContentView: View {
         VStack(spacing: 6) {
             Text("DAY")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(Theme.maroon)
+                .foregroundStyle(Theme.themeText)
                 .tracking(4)
             Text("\(dayNumber)")
                 .font(.system(size: 76, weight: .heavy, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(Theme.highlight)
                 .contentTransition(.numericText())
+                
             Text("of \(totalDays)")
                 .font(.subheadline.weight(.medium))
-                .foregroundStyle(Theme.maroon)
+                .foregroundStyle(Theme.themeText)
 
             MosaicProgressBar(
                 store: photoStore,
                 startDate: challenge?.startDate ?? startOfToday,
                 totalDays: totalDays,
                 currentDay: dayNumber,
-                tint: Theme.maroon,
+                tint: .white,
                 trackBackground: Color.white.opacity(0.25)
             )
             .padding(.top, 12)
@@ -150,9 +150,7 @@ struct ContentView: View {
 
             MilestoneStrip(
                 totalDays: totalDays,
-                currentDay: dayNumber,
-                unlockedColor: .white,
-                lockedColor: Color.white.opacity(0.4)
+                currentDay: dayNumber
             )
             .padding(.top, 4)
             .padding(.horizontal, 4)
@@ -162,10 +160,10 @@ struct ContentView: View {
                     Image(systemName: "gift.fill")
                         .font(.caption)
                     Text(next)
-                        .font(.caption.weight(.medium))
+                        .font(.subheadline)
                         .lineLimit(1)
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(Theme.themeText)
                 .padding(.top, 8)
             }
 
@@ -173,10 +171,10 @@ struct ContentView: View {
                 Spacer()
                 Image(systemName: "photo.on.rectangle.angled")
                     .font(.caption2)
-                Text("Tap for progress photo gallery")
+                Text("Progress photo gallery  >")
                     .font(.caption2)
             }
-            .foregroundStyle(Color.white.opacity(0.8))
+            .foregroundStyle(Theme.themeText)
             .padding(.top, 6)
         }
         .frame(maxWidth: .infinity)
@@ -373,9 +371,10 @@ private struct MosaicProgressBar: View {
 private struct MilestoneStrip: View {
     let totalDays: Int
     let currentDay: Int
-    var unlockedColor: Color = Theme.primary
-    var lockedColor: Color = Color.secondary.opacity(0.5)
+    var unlockedColor: Color = Theme.highlight
+    var lockedColor: Color = Color.white.opacity(0.2)
 
+    
     var body: some View {
         GeometryReader { geo in
             let width = geo.size.width
@@ -632,7 +631,7 @@ private struct ProgressPhotoRow: View {
             HStack(spacing: 14) {
                 IconBadge(systemName: "camera.fill", tint: tint, active: hasPhoto)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Take a Progress Photo")
+                    Text("Take a progress photo")
                         .font(.body.weight(.medium))
                         .foregroundStyle(hasPhoto ? .white : .primary)
                     Text(hasPhoto ? "Tap to retake" : "Before post-workout shower")

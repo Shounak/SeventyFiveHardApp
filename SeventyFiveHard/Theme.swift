@@ -1,11 +1,12 @@
 import SwiftUI
 
 enum Theme {
-    static let primary = Color.accentColor              // saffron #F08241
-    static let maroon = Color("AccentMaroon")           // #5E0000
-    static let green = Color("AccentGreen")             // #006E5E
-    static let background = Color("AppBackground")      // #DFE0DF
-    static let surface = Color("CardSurface")           // near-white card
+    static let primary = Color.accentColor
+    static let highlight = Color("HighlightColor")
+    static let themeText = Color("ThemeTextColor")
+    static let green = Color("AccentGreen")
+    static let background = Color("AppBackground")
+    static let surface = Color("CardSurface")           
 
     static let cardCornerRadius: CGFloat = 18
     static let cardShadow = Color.black.opacity(0.05)
