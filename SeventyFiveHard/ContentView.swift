@@ -187,8 +187,8 @@ struct ContentView: View {
     private func checklist(for entry: DayEntry) -> some View {
         VStack(spacing: 12) {
             RuleRow(
-                title: "CrossFit class",
-                subtitle: "Usually 5:30",
+                title: "Workout",
+                subtitle: "Usually CrossFit class at 5:30",
                 icon: "figure.strengthtraining.traditional",
                 tint: Theme.green,
                 isOn: bind(\.crossfit, on: entry)
@@ -208,7 +208,7 @@ struct ContentView: View {
             )
             RuleRow(
                 title: "10 pages reading",
-                subtitle: "Prefer reading ADHD books",
+                subtitle: "Non-fiction books",
                 icon: "book.fill",
                 tint: Theme.green,
                 isOn: bind(\.reading, on: entry)
@@ -493,10 +493,10 @@ private struct DietRow: View {
 
             if expanded {
                 VStack(spacing: 8) {
-                    SubItemRow(title: "Solid meal 1", icon: "frying.pan.fill", tint: tint, parentComplete: complete, isOn: $entry.meal1)
+                    SubItemRow(title: "Breakfast", icon: "frying.pan.fill", tint: tint, parentComplete: complete, isOn: $entry.meal1)
                     SubItemRow(title: "Fruit 1", icon: "applelogo", tint: tint, parentComplete: complete, isOn: $entry.fruit1)
                     SubItemRow(title: "Protein shake 1", icon: "takeoutbag.and.cup.and.straw.fill", tint: tint, parentComplete: complete, isOn: $entry.shake1)
-                    SubItemRow(title: "Solid meal 2", icon: "fork.knife", tint: tint, parentComplete: complete, isOn: $entry.meal2)
+                    SubItemRow(title: "Dinner", icon: "fork.knife", tint: tint, parentComplete: complete, isOn: $entry.meal2)
                     SubItemRow(title: "Fruit 2", icon: "carrot.fill", tint: tint, parentComplete: complete, isOn: $entry.fruit2)
                     SubItemRow(title: "Protein shake 2", icon: "cup.and.saucer.fill", tint: tint, parentComplete: complete, isOn: $entry.shake2)
                 }
@@ -583,11 +583,11 @@ private struct WaterRow: View {
             IconBadge(systemName: "drop.fill", tint: tint, active: met)
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text("1 gallon water")
+                    Text("Drink 1 gallon of water")
                         .font(.body.weight(.medium))
                         .foregroundStyle(met ? .white : .primary)
                     Spacer()
-                    Text("\(Int(ounces.rounded())) / \(Int(goal)) fl oz")
+                    Text("\(Int(ounces.rounded())) / \(Int(goal)) fl. oz.")
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(met ? Color.white.opacity(0.9) : .secondary)
                 }
