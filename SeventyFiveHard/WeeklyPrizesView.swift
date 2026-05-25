@@ -23,7 +23,7 @@ struct WeeklyPrizesView: View {
                     .padding(.vertical, 12)
                 }
             }
-            .navigationTitle("Weekly Rewards")
+            .navigationTitle("Weekly Prizes")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
