@@ -24,6 +24,19 @@ final class PhotoStore {
         directory.appendingPathComponent(Self.filename(for: date))
     }
 
+    /// All dates that have a saved photo, sorted most recent first.
+    func allPhotoDates() -> [Date] {
+        _ = revision
+        let fm = FileManager.default
+        let names = (try? fm.contentsOfDirectory(atPath: directory.path)) ?? []
+        let dates: [Date] = names.compactMap { name in
+            guard name.hasSuffix(".jpg") else { return nil }
+            let stem = String(name.dropLast(4))
+            return Self.filenameFormatter.date(from: stem)
+        }
+        return dates.sorted(by: >)
+    }
+
     func hasPhoto(for date: Date) -> Bool {
         FileManager.default.fileExists(atPath: url(for: date).path)
     }
