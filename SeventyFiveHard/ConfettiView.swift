@@ -1,10 +1,12 @@
 import SwiftUI
 import UIKit
+import AVFoundation
 
 struct ConfettiView: View {
     let trigger: Bool
 
     @State private var burstID: UUID?
+    @State private var cheerPlayer: AVAudioPlayer?
 
     var body: some View {
         Group {
@@ -18,6 +20,7 @@ struct ConfettiView: View {
         .onChange(of: trigger) { _, newValue in
             guard newValue else { return }
             UINotificationFeedbackGenerator().notificationOccurred(.success)
+            playRandomCheer()
             let id = UUID()
             burstID = id
             Task {
@@ -27,6 +30,17 @@ struct ConfettiView: View {
                 }
             }
         }
+    }
+
+    private func playRandomCheer() {
+        let wavUrls = Bundle.main.urls(forResourcesWithExtension: "wav", subdirectory: "SoundEffects") ?? []
+        let flacUrls = Bundle.main.urls(forResourcesWithExtension: "flac", subdirectory: "SoundEffects") ?? []
+        let mp3Urls = Bundle.main.urls(forResourcesWithExtension: "mp3", subdirectory: "SoundEffects") ?? []
+        let urls = wavUrls + flacUrls + mp3Urls
+        guard let url = urls.randomElement() else { return }
+        cheerPlayer = try? AVAudioPlayer(contentsOf: url)
+        cheerPlayer?.prepareToPlay()
+        cheerPlayer?.play()
     }
 }
 
