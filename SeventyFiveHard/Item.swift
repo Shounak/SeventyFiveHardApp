@@ -30,8 +30,8 @@ final class DayEntry {
         meal1 && meal2 && fruit1 && fruit2 && shake1 && shake2
     }
 
-    func allComplete(waterMetGoal: Bool, photoTaken: Bool) -> Bool {
-        crossfit && inBedBy1145 && reading && noCheating && waterMetGoal && photoTaken && dietComplete
+    func allComplete() -> Bool {
+        crossfit
     }
 }
 

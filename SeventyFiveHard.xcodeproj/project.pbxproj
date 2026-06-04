@@ -45,6 +45,11 @@
 			path = SeventyFiveHardUITests;
 			sourceTree = "<group>";
 		};
+		CEEEDC3C2FD0F91200BE1352 /* SoundEffects */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SoundEffects;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +84,7 @@
 				CE139FD92FBEA87A004001AA /* SeventyFiveHardTests */,
 				CE139FE32FBEA87A004001AA /* SeventyFiveHardUITests */,
 				CE139FC82FBEA878004001AA /* Products */,
+				CEEEDC3C2FD0F91200BE1352 /* SoundEffects */,
 			);
 			sourceTree = "<group>";
 		};
@@ -109,6 +115,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				CE139FC92FBEA878004001AA /* SeventyFiveHard */,
+				CEEEDC3C2FD0F91200BE1352 /* SoundEffects */,
 			);
 			name = SeventyFiveHard;
 			packageProductDependencies = (

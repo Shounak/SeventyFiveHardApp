@@ -33,10 +33,10 @@ struct ConfettiView: View {
     }
 
     private func playRandomCheer() {
-        let wavUrls = Bundle.main.urls(forResourcesWithExtension: "wav", subdirectory: "SoundEffects") ?? []
-        let flacUrls = Bundle.main.urls(forResourcesWithExtension: "flac", subdirectory: "SoundEffects") ?? []
-        let mp3Urls = Bundle.main.urls(forResourcesWithExtension: "mp3", subdirectory: "SoundEffects") ?? []
-        let urls = wavUrls + flacUrls + mp3Urls
+        let extensions = ["wav", "flac", "mp3"]
+        let urls = extensions.flatMap { ext in
+            Bundle.main.urls(forResourcesWithExtension: ext, subdirectory: nil) ?? []
+        }
         guard let url = urls.randomElement() else { return }
         cheerPlayer = try? AVAudioPlayer(contentsOf: url)
         cheerPlayer?.prepareToPlay()

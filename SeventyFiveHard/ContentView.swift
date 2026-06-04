@@ -39,7 +39,7 @@ struct ContentView: View {
             guard entry.date >= start, entry.date < startOfToday else { continue }
             let waterMet = (await waterReader.ouncesOn(date: entry.date)) >= WaterReader.goalFlOz
             let photoTaken = photoStore.hasPhoto(for: entry.date)
-            if !entry.allComplete(waterMetGoal: waterMet, photoTaken: photoTaken) {
+            if !entry.allComplete() {
                 return true
             }
         }
@@ -297,9 +297,10 @@ struct ContentView: View {
 
     private var todayAllComplete: Bool {
         guard let entry = todayEntry else { return false }
-        let waterMet = waterReader.metGoal
-        let photoTaken = photoStore.hasPhoto(for: startOfToday)
-        return entry.allComplete(waterMetGoal: waterMet, photoTaken: photoTaken)
+        
+        // let waterMet = waterReader.metGoal
+        // let photoTaken = photoStore.hasPhoto(for: startOfToday)
+        return entry.allComplete()
     }
 
     private func resetChallenge() {
