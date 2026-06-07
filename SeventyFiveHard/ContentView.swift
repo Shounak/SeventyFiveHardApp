@@ -32,17 +32,33 @@ struct ContentView: View {
         entries.first { Calendar.current.isDate($0.date, inSameDayAs: startOfToday) }
     }
 
-    private func anyMissedPriorDay() async -> Bool {
-        guard let start = challenge?.startDate, start < startOfToday else { return false }
+    private func missedPriorDay() async -> Bool {
+        guard
+            let start = challenge?.startDate,
+            start < startOfToday,
+            let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: startOfToday)
+        else {
+            return false
+        }
+
+        // If the challenge had not started by the previous day, there is no prior day to miss.
+        guard previousDay >= Calendar.current.startOfDay(for: start) else {
+            return false
+        }
+
         for entry in entries {
-            if Calendar.current.isDate(entry.date, inSameDayAs: startOfToday) { continue }
-            guard entry.date >= start, entry.date < startOfToday else { continue }
+            guard Calendar.current.isDate(entry.date, inSameDayAs: previousDay) else {
+                continue
+            }
+
             let waterMet = (await waterReader.ouncesOn(date: entry.date)) >= WaterReader.goalFlOz
             let photoTaken = photoStore.hasPhoto(for: entry.date)
+
             if !entry.allComplete(waterMetGoal: waterMet, photoTaken: photoTaken) {
                 return true
             }
         }
+
         return false
     }
 
@@ -283,7 +299,7 @@ struct ContentView: View {
             modelContext.insert(DayEntry(date: startOfToday))
         }
         Task {
-            if await anyMissedPriorDay() {
+            if await missedPriorDay() {
                 pendingMissedReset = true
             }
         }
